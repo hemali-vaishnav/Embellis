@@ -5,7 +5,7 @@ import ProductShowcase from './ProductShowcase/ProductShowcase'
 export default function Home() {
   return (
     <div>
-      {/* <Herobanner/> */}
+      <Herobanner/>
       <ProductShowcase/>
     </div>
   )
