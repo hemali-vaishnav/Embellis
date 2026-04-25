@@ -3,6 +3,8 @@ body {
     padding: 0;
     font-family: "Roboto", sans-serif;
     background-color: #fff;
+    font-family: 'Montserrat', sans-serif;
+
 
     ::-webkit-scrollbar {
         display: none;
@@ -45,92 +47,3 @@ ul {
 
 }
 
-/* ============================= */
-/* 📱 SMALL DEVICES ≥ 640px */
-/* ============================= */
-@media (min-width: 640px) {
-    body {
-        font-size: 15px;
-    }
-
-    .grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-/* ============================= */
-/* 📲 TABLET ≥ 768px */
-/* ============================= */
-@media (min-width: 768px) {
-    body {
-        font-size: 16px;
-    }
-
-    .container {
-        max-width: 720px;
-    }
-
-    .flex-row {
-        flex-direction: row;
-    }
-
-    .nav {
-        display: flex;
-        gap: 20px;
-    }
-
-    .menu-icon {
-        display: none;
-    }
-
-    .section {
-        padding: 60px 0;
-    }
-}
-
-/* ============================= */
-/* 💻 LAPTOP ≥ 1024px */
-/* ============================= */
-@media (min-width: 1024px) {
-    body {
-        font-size: 18px;
-    }
-
-    .container {
-        max-width: 960px;
-    }
-
-    .grid {
-        grid-template-columns: 1fr 1fr 1fr;
-    }
-
-    .section {
-        padding: 80px 0;
-    }
-}
-
-/* ============================= */
-/* 🖥 DESKTOP ≥ 1280px */
-/* ============================= */
-@media (min-width: 1280px) {
-    body {
-        font-size: 20px;
-    }
-
-    .container {
-        max-width: 1140px;
-    }
-}
-
-/* ============================= */
-/* 🖥 LARGE SCREEN ≥ 1536px */
-/* ============================= */
-@media (min-width: 1536px) {
-    body {
-        font-size: 22px;
-    }
-
-    .container {
-        max-width: 1320px;
-    }
-}
