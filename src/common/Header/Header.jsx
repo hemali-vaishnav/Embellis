@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import LogoAnimation from "../LogoAnimation";
 import { FiUser, FiSearch } from "react-icons/fi";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { GrFavorite } from "react-icons/gr";
 import { MdKeyboardArrowDown } from "react-icons/md";
 
 export default function Header() {
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [cartCount, setCartCount] = useState(1); // 🔥 change dynamically later
@@ -65,11 +67,18 @@ export default function Header() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50">
+    <header
+      className={`top-0 left-0 w-full z-50 ${isHomePage ? "fixed" : "sticky"
+        }`}
+    >
       {/* Background */}
       <div
-        className={`absolute top-0 left-0 w-full h-full bg-[#fffaf0] shadow-sm transform transition-all duration-500 ease-in-out 
-        ${scrolled ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"}`}
+        className={`absolute top-0 left-0 w-full h-full bg-[#fffaf0] shadow-sm 
+  transform transition-all duration-500 ease-in-out
+  ${!isHomePage || scrolled
+            ? "translate-y-0 opacity-100"
+            : "-translate-y-full opacity-0"}
+  `}
       />
 
       <div className="relative mx-auto h-[125px] px-14  grid grid-cols-[1fr_auto_1fr] items-center py-2">
