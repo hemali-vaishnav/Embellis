@@ -36,36 +36,28 @@ export default function Header() {
   }, []);
 
   const navLinks = [
-     {
+    {
       name: "Home",
       path: "/",
     },
     {
       name: "Men",
       path: "/collections/men",
-      categories: [
-        "All",
-        "Embroidered Shirts",
-        "Casual Wear",
-        "Festive Wear",
-        "Jackets & Overshirts",
-        "Minimal Embroidery",
-        "Hand Embroidery ⭐",
-      ],
+
     },
     {
       name: "Women",
       path: "/collections/women",
-      categories: [
-        "All",
-        "Embroidered Tops",
-        "Kurtis & Fusion Wear",
-        "Dresses",
-        "Co-ord Sets",
-        "Statement Pieces",
-        "Hand Embroidery ⭐",
-      ],
+
     },
+
+    // 🔥 NEW
+    {
+      name: "Handcrafted",
+      path: "#",
+      categories: ["Men", "Women"],
+    },
+
     {
       name: "Custom",
       path: "/custom",
@@ -88,25 +80,30 @@ export default function Header() {
             <Link
               key={i}
               to={item.path}
-              className="relative flex items-center gap-1 text-[#3d2b1a] group"
+              className="relative flex items-center gap-1 text-[#3d2b1a] group py-2"
             >
               {item.name}
               {item.categories && (
-                <div className="absolute top-8 left-0 hidden group-hover:block bg-white shadow-lg p-4 w-[240px] ">
-                  {item.categories.map((cat, index) => (
-                    <p key={index} className="text-sm hover:underline cursor-pointer">
-                      {cat}
-                    </p>
-                  ))}
+                <div className="absolute top-full left-0 hidden group-hover:block pt-2 ">
+                  <div className="bg-white shadow-lg p-4 w-[240px]">
+                    {item.categories.map((cat, index) => (
+                      <p key={index} className="text-sm hover:underline cursor-pointer">
+                        {cat}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* Dropdown Arrow */}
-              <MdKeyboardArrowDown className="w-5 h-5 transition-transform duration-500 group-hover:rotate-180" />
+              {item.name === "Handcrafted" ? (
+                <MdKeyboardArrowDown className="w-5 h-5 transition-transform duration-500 group-hover:rotate-180" />
+              ) : (
+                ""
+              )}
 
               {/* Underline */}
-              <span className="absolute left-[-2px] -bottom-1 w-0 h-[1px] bg-black 
-    transition-all duration-500 ease-out group-hover:w-full"></span>
+              <span className="absolute left-[-2px] bottom-1 w-0 h-[1px] bg-black transition-all duration-500 ease-out group-hover:w-full"></span>
             </Link>
           ))}
         </nav>
