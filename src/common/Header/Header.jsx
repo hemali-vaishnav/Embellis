@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import LogoAnimation from "../LogoAnimation";
 import { FiUser, FiSearch } from "react-icons/fi";
 import { Link, useLocation } from "react-router";
 import { GrFavorite } from "react-icons/gr";
 import { MdKeyboardArrowDown } from "react-icons/md";
+import LogoAnimation from "../../components/LogoAnimation";
+import Signup from "../Auth/Signup/Signup";
 
 export default function Header() {
   const location = useLocation();
@@ -11,6 +12,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [cartCount, setCartCount] = useState(1); // 🔥 change dynamically later
+  const [showSignup, setShowSignup] = useState(false);
 
   const CartIcon = ({ className }) => (
     <svg
@@ -140,25 +142,42 @@ export default function Header() {
           </div>
 
           {/* Icons */}
-          {actionLinks.map(({ icon: Icon, to, label, isCart }, i) => (
-            <Link
-              key={i}
-              to={to}
-              aria-label={label}
-              className="relative group cursor-pointer"
-            >
-              <Icon className="w-6 h-6" />
+          {actionLinks.map(({ icon: Icon, to, label, isCart }, i) => {
+            if (label === "Account") {
+              return (
+                <button
+                  key={i}
+                  aria-label="Account"
+                  onClick={() => setShowSignup(true)}
+                  className="relative group cursor-pointer"
+                >
+                  <Icon className="w-6 h-6" />
+                </button>
+              );
+            }
 
-              {/* Cart Badge */}
-              {isCart && cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] 
-                min-w-[16px] h-[16px] px-[4px] flex items-center justify-center 
-                rounded-full">
-                  {cartCount > 9 ? "9+" : cartCount}
-                </span>
-              )}
-            </Link>
-          ))}
+            return (
+              <Link
+                key={i}
+                to={to}
+                aria-label={label}
+                className="relative group cursor-pointer"
+              >
+                <Icon className="w-6 h-6" />
+
+                {isCart && cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-black text-white text-[10px]
+        min-w-[16px] h-[16px] px-[4px] flex items-center justify-center rounded-full">
+                    {cartCount > 9 ? "9+" : cartCount}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+
+          {showSignup && (
+            <Signup onClose={() => setShowSignup(false)} />
+          )}
         </div>
       </div>
     </header>
