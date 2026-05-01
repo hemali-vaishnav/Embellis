@@ -1,11 +1,11 @@
 import { createBrowserRouter } from "react-router";
 import DefaultLayout from "./DefaultLayout";
-import Home from "../pages/Home/Home";
-import Cart from "../common/Cart/Cart";
-import Favorite from "../common/Favorite/Favorite";
-import Custom from "../pages/Custom/Custom";
-import MenCollections from "../pages/MenCollections/MenCollections";
-import WomenCollections from "../pages/WomenCollections/WomenCollections";
+import Home from "../User/pages/Home/Home";
+import Cart from "../User/common/Cart/Cart";
+import Favorite from "../User/common/Favorite/Favorite";
+import Custom from "../User/pages/Custom/Custom";
+import MenCollections from "../User/pages/MenCollections/MenCollections";
+import WomenCollections from "../User/pages/WomenCollections/WomenCollections";
 
 const router = createBrowserRouter([
     {

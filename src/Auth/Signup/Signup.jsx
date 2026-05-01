@@ -1,7 +1,7 @@
 import React from "react";
 import { FiArrowRight, FiMail, FiUser, FiX } from "react-icons/fi";
 
-export default function Signup({ onClose }) {
+export default function Signup({ onClose , onLoginClick  }) {
   return (
     <div
       className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-4 py-8"
@@ -104,6 +104,7 @@ export default function Signup({ onClose }) {
             Already have an account?{" "}
             <button
               type="button"
+              onClick={onLoginClick}
               className="font-semibold text-[#3d2b1a] underline underline-offset-4"
             >
               Log in

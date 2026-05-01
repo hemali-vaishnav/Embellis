@@ -19,7 +19,7 @@ export default function UseTabMessage() {
                 interval = setInterval(() => {
                     document.title = messages[i % messages.length];
                     i++;
-                }, 2000);
+                }, 1500);
             } else {
                 clearInterval(interval);
                 document.title = originalTitle;

@@ -3,8 +3,9 @@ import { FiUser, FiSearch } from "react-icons/fi";
 import { Link, useLocation } from "react-router";
 import { GrFavorite } from "react-icons/gr";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import LogoAnimation from "../../components/LogoAnimation";
-import Signup from "../Auth/Signup/Signup";
+import LogoAnimation from "../../../commonfunction/LogoAnimation";
+import Signup from "../../../Auth/Signup/Signup";
+import Login from "../../../Auth/Login/Login";
 
 export default function Header() {
   const location = useLocation();
@@ -12,8 +13,8 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [cartCount, setCartCount] = useState(1); // 🔥 change dynamically later
-  const [showSignup, setShowSignup] = useState(false);
-
+  const [authModal, setAuthModal] = useState(null);
+  // null | "signup" | "login"
   const CartIcon = ({ className }) => (
     <svg
       viewBox="0 0 21 20"
@@ -148,7 +149,7 @@ export default function Header() {
                 <button
                   key={i}
                   aria-label="Account"
-                  onClick={() => setShowSignup(true)}
+                  onClick={() => setAuthModal("signup")}
                   className="relative group cursor-pointer"
                 >
                   <Icon className="w-6 h-6" />
@@ -175,8 +176,18 @@ export default function Header() {
             );
           })}
 
-          {showSignup && (
-            <Signup onClose={() => setShowSignup(false)} />
+          {authModal === "signup" && (
+            <Signup
+              onClose={() => setAuthModal(null)}
+              onLoginClick={() => setAuthModal("login")}
+            />
+          )}
+
+          {authModal === "login" && (
+            <Login
+              onClose={() => setAuthModal(null)}
+              onSignupClick={() => setAuthModal("signup")}
+            />
           )}
         </div>
       </div>
