@@ -2,13 +2,16 @@ import React from 'react'
 
 const getAuthUser = () => {
     const rawUser = localStorage.getItem("user");
+    const email = localStorage.getItem("email");
+    const role = localStorage.getItem("role");
+    const phone = localStorage.getItem("phone");
 
-    if (!rawUser) return {};
+    if (!rawUser) return { email, role, phone };
 
     try {
-        return JSON.parse(rawUser) || {};
+        return { ...(JSON.parse(rawUser) || {}), email, role, phone };
     } catch {
-        return {};
+        return { name: rawUser, email, role, phone };
     }
 };
 
@@ -30,7 +33,7 @@ export default function UserProfile() {
                     </div>
                     <div>
                         <p className="text-sm text-[#3d2b1a]/55">Phone</p>
-                        <p className="mt-1 font-medium">{user.phone || user.mobile || "No phone found"}</p>
+                        <p className="mt-1 font-medium">{user.phone || "No phone found"}</p>
                     </div>
                 </div>
             </div>
