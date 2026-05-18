@@ -6,6 +6,7 @@ import Favorite from "../User/common/Favorite/Favorite";
 import Custom from "../User/pages/Custom/Custom";
 import MenCollections from "../User/pages/MenCollections/MenCollections";
 import WomenCollections from "../User/pages/WomenCollections/WomenCollections";
+import UserProfile from "../User/pages/UserProfile/UserProfile";
 
 const router = createBrowserRouter([
     {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
             {
                 path: "/custom",
                 element: <Custom />,
+            },
+            {
+                path: "/profile",
+                element: <UserProfile />,
             },
         ]
     }
