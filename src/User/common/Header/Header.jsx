@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { FiUser } from "react-icons/fi";
+import { FiUser, FiSettings } from "react-icons/fi";
 import { Link, useLocation, useNavigate } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
 import { GrFavorite } from "react-icons/gr";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import LogoAnimation from "../../../commonfunction/LogoAnimation";
 import Signup from "../../../Auth/SignUp/Signup";
 import { IoIosSearch } from "react-icons/io";
 import VerifyOtp from "../../../Auth/VerifyOtp/VerifyOtp";
+import { fetchCart } from "../../../redux/slices/cartSlice";
+import { fetchFavorites } from "../../../redux/slices/favoriteSlice";
+import { openAuthModal, setAuthStep, closeAuthModal } from "../../../redux/slices/authModalSlice";
 
 const hasAuthData = () => {
   return Boolean(localStorage.getItem("token") || localStorage.getItem("user"));
 };
+
+const isAdmin = () => localStorage.getItem("role") === "admin";
 
 const CartIcon = ({ className }) => (
   <svg
@@ -26,13 +32,24 @@ const CartIcon = ({ className }) => (
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const isHomePage = location.pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [cartCount] = useState(1);
-  const [authModal, setAuthModal] = useState(null);
+  const cartCount = useSelector((state) =>
+    state.cart.items.reduce((sum, item) => sum + item.quantity, 0)
+  );
+  const favoriteCount = useSelector((state) => state.favorites.favorites.length);
+  const authModal = useSelector((state) => state.authModal.step);
   const [verifiedEmail, setVerifiedEmail] = useState("");
   // null | "verify-phone" | "signup"
+
+  useEffect(() => {
+    if (hasAuthData()) {
+      dispatch(fetchCart());
+      dispatch(fetchFavorites());
+    }
+  }, [dispatch]);
 
   const handleAccountClick = () => {
     if (hasAuthData()) {
@@ -40,12 +57,12 @@ export default function Header() {
       return;
     }
 
-    setAuthModal("verify-phone");
+    dispatch(openAuthModal());
   };
   const actionLinks = [
     { icon: <FiUser className="w-6 h-6 text-[#3d2b1a]" />, to: "#", label: "Account" },
     { icon: <CartIcon className="w-6 h-6 text-[#3d2b1a]" />, to: "/cart", label: "Cart", isCart: true },
-    { icon: <GrFavorite className="w-6 h-6 text-[#3d2b1a]" />, to: "/favorite", label: "Favorite" },
+    { icon: <GrFavorite className="w-6 h-6 text-[#3d2b1a]" />, to: "/favorite", label: "Favorite", isFavorite: true },
   ];
 
   useEffect(() => {
@@ -75,8 +92,10 @@ export default function Header() {
     // 🔥 NEW
     {
       name: "Handcrafted",
-      path: "#",
-      categories: ["Men", "Women"],
+      categories: [
+        { label: "Men", path: "/collections/handwork/men" },
+        { label: "Women", path: "/collections/handwork/women" },
+      ],
     },
 
     {
@@ -107,36 +126,42 @@ export default function Header() {
 
         {/* Left Nav */}
         <nav className="hidden md:flex items-center gap-8 text-[13px] font-semibold tracking-wider uppercase">
-          {navLinks.map((item, i) => (
-            <Link
-              key={i}
-              to={item.path}
-              className="relative flex items-center gap-1 text-[#3d2b1a] group py-2"
-            >
-              {item.name}
-              {item.categories && (
-                <div className="absolute top-full left-0 hidden group-hover:block pt-2 ">
+          {navLinks.map((item, i) =>
+            item.categories ? (
+              <div
+                key={i}
+                className="relative flex items-center gap-1 text-[#3d2b1a] group py-2 cursor-default"
+              >
+                {item.name}
+                <MdKeyboardArrowDown className="w-5 h-5 transition-transform duration-500 group-hover:rotate-180" />
+
+                <div className="absolute top-full left-0 hidden group-hover:block pt-2">
                   <div className="bg-white shadow-lg p-4 w-[240px]">
-                    {item.categories.map((cat, index) => (
-                      <p key={index} className="text-sm hover:underline cursor-pointer">
-                        {cat}
-                      </p>
+                    {item.categories.map((cat) => (
+                      <Link
+                        key={cat.label}
+                        to={cat.path}
+                        className="block text-sm py-1 hover:underline cursor-pointer normal-case"
+                      >
+                        {cat.label}
+                      </Link>
                     ))}
                   </div>
                 </div>
-              )}
 
-              {/* Dropdown Arrow */}
-              {item.name === "Handcrafted" ? (
-                <MdKeyboardArrowDown className="w-5 h-5 transition-transform duration-500 group-hover:rotate-180" />
-              ) : (
-                ""
-              )}
-
-              {/* Underline */}
-              <span className="absolute left-[-2px] bottom-1 w-0 h-[1px] bg-black transition-all duration-500 ease-out group-hover:w-full"></span>
-            </Link>
-          ))}
+                <span className="absolute left-[-2px] bottom-1 w-0 h-[1px] bg-black transition-all duration-500 ease-out group-hover:w-full"></span>
+              </div>
+            ) : (
+              <Link
+                key={i}
+                to={item.path}
+                className="relative flex items-center gap-1 text-[#3d2b1a] group py-2"
+              >
+                {item.name}
+                <span className="absolute left-[-2px] bottom-1 w-0 h-[1px] bg-black transition-all duration-500 ease-out group-hover:w-full"></span>
+              </Link>
+            )
+          )}
         </nav>
 
         {/* Logo */}
@@ -161,8 +186,19 @@ export default function Header() {
             />
           </div>
 
+          {/* Admin Panel */}
+          {isAdmin() && (
+            <Link
+              to="/admin/catalog"
+              className="hidden md:flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-white bg-[#3d2b1a] px-3 py-2 rounded-full hover:bg-[#2f2115] transition"
+            >
+              <FiSettings className="w-4 h-4" />
+              Admin Panel
+            </Link>
+          )}
+
           {/* Icons */}
-          {actionLinks.map(({ icon, to, label, isCart }, i) => {
+          {actionLinks.map(({ icon, to, label, isCart, isFavorite }, i) => {
             if (label === "Account") {
               return (
                 <button
@@ -190,24 +226,30 @@ export default function Header() {
                     {cartCount > 9 ? "9+" : cartCount}
                   </span>
                 )}
+                {isFavorite && favoriteCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-black text-white text-[10px]
+        min-w-[16px] h-[16px] px-[4px] flex items-center justify-center rounded-full">
+                    {favoriteCount > 9 ? "9+" : favoriteCount}
+                  </span>
+                )}
               </Link>
             );
           })}
 
           {authModal === "verify-phone" && (
             <VerifyOtp
-              onClose={() => setAuthModal(null)}
+              onClose={() => dispatch(closeAuthModal())}
               onVerified={(data) => {
                 const email = data?.user?.email || data?.email || "";
 
                 if (data?.token) {
-                  setAuthModal(null);
+                  dispatch(closeAuthModal());
                   navigate("/profile");
                   return;
                 }
 
                 setVerifiedEmail(email);
-                setAuthModal("signup");
+                dispatch(setAuthStep("signup"));
               }}
             />
           )}
@@ -215,9 +257,9 @@ export default function Header() {
           {authModal === "signup" && (
             <Signup
               email={verifiedEmail}
-              onClose={() => setAuthModal(null)}
+              onClose={() => dispatch(closeAuthModal())}
               onSuccess={() => {
-                setAuthModal(null);
+                dispatch(closeAuthModal());
                 navigate("/profile");
               }}
             />
