@@ -1,39 +1,6 @@
-import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import ProductShowcase from '../Home/ProductShowcase/ProductShowcase'
-import { fetchProducts } from '../../../redux/slices/productSlice'
-import { fetchFavorites } from '../../../redux/slices/favoriteSlice'
-
-const isLoggedIn = () => Boolean(localStorage.getItem('token'));
+import React from 'react'
+import GenderCollection from '../GenderCollection/GenderCollection'
 
 export default function WomenCollections() {
-  const dispatch = useDispatch();
-  const { categories, loading, error } = useSelector((state) => state.products);
-
-  useEffect(() => {
-    dispatch(fetchProducts('Women'));
-    if (isLoggedIn()) dispatch(fetchFavorites());
-  }, [dispatch]);
-
-  const womenCategory = categories[0];
-
-  return (
-    <div className="pt-32 pb-20">
-      <h1 className="text-3xl font-semibold text-center mb-10">Women's Collection</h1>
-
-      {loading && (
-        <p className="text-center text-sm text-gray-400">Loading products...</p>
-      )}
-
-      {error && (
-        <p className="text-center text-sm text-red-500">{error}</p>
-      )}
-
-      {!loading && !error && !womenCategory && (
-        <p className="text-center text-sm text-gray-400">No products found in this category.</p>
-      )}
-
-      {womenCategory && <ProductShowcase products={womenCategory.products} />}
-    </div>
-  )
+  return <GenderCollection category="Women" title="Women's Collection" />
 }

@@ -41,6 +41,7 @@ const columnDefs = [
   },
   { field: "category", headerName: "Category", minWidth: 130 },
   { field: "product_name", headerName: "Product", minWidth: 180, flex: 1.4 },
+  { field: "gender", headerName: "Gender", minWidth: 110, valueFormatter: (p) => p.value || "-" },
   { field: "sub_category", headerName: "Sub Category", minWidth: 140, valueFormatter: (p) => p.value || "-" },
   { field: "type", headerName: "Type", minWidth: 130, valueFormatter: (p) => p.value || "-" },
   { field: "size", headerName: "Size", minWidth: 100 },
@@ -52,6 +53,8 @@ const columnDefs = [
     valueFormatter: (p) => (p.value != null ? `₹${p.value}` : ""),
   },
   { field: "stock", headerName: "Stock", minWidth: 100, type: "numericColumn" },
+  { field: "is_trending", headerName: "Trending", minWidth: 100, cellRenderer: (p) => (p.value ? "✅" : "—") },
+  { field: "is_best_seller", headerName: "Best Seller", minWidth: 110, cellRenderer: (p) => (p.value ? "✅" : "—") },
 ];
 
 const defaultColDef = {
@@ -113,7 +116,10 @@ export default function UploadCatalog() {
         <h1 className="text-2xl font-semibold">Product Catalog</h1>
         <p className="text-sm text-gray-500 mt-1">
           Upload an Excel/CSV file to bulk add products. Expected columns: product_name, price,
-          size, type, stock, category, sub_category, description, image_1, image_2.
+          size, type, stock, category, sub_category, gender, description, image_1, image_2,
+          is_trending, is_best_seller (use TRUE/FALSE). Use "gender" (Men/Women) on Handwork
+          rows to also filter them under Handcrafted &gt; Men/Women. Products marked is_trending
+          or is_best_seller show up in the matching Home page section.
         </p>
       </div>
 

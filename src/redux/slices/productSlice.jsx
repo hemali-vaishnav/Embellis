@@ -5,12 +5,13 @@ export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
   async (params, { rejectWithValue }) => {
     try {
-      const { category, subCategory } =
+      const { category, subCategory, gender } =
         typeof params === "string" ? { category: params } : params || {};
 
       const query = new URLSearchParams();
       if (category) query.set("category", category);
       if (subCategory) query.set("sub_category", subCategory);
+      if (gender) query.set("gender", gender);
       const queryString = query.toString();
 
       const res = await fetch(`${baseUrl}/products${queryString ? `?${queryString}` : ""}`);

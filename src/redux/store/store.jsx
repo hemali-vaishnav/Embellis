@@ -9,6 +9,7 @@ import favoriteReducer from '../slices/favoriteSlice';
 import adminUserReducer from '../slices/adminUserSlice';
 import adminCustomReducer from '../slices/adminCustomSlice';
 import authModalReducer from '../slices/authModalSlice';
+import featuredReducer from '../slices/featuredSlice';
 
 
 const store = configureStore(
@@ -24,6 +25,7 @@ const store = configureStore(
             adminUsers: adminUserReducer,
             adminCustom: adminCustomReducer,
             authModal: authModalReducer,
+            featured: featuredReducer,
         }
     }
 );

@@ -2,17 +2,22 @@ import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Herobanner from './Herobanner/Herobanner'
 import ProductShowcase from './ProductShowcase/ProductShowcase'
-import { fetchProducts } from '../../../redux/slices/productSlice'
+import TrendingCarousel from './TrendingCarousel/TrendingCarousel'
+import CustomPromoBanner from './CustomPromoBanner/CustomPromoBanner'
+import { fetchTrending, fetchBestSellers } from '../../../redux/slices/featuredSlice'
 import { fetchFavorites } from '../../../redux/slices/favoriteSlice'
 
 const isLoggedIn = () => Boolean(localStorage.getItem('token'));
 
 export default function Home() {
   const dispatch = useDispatch();
-  const { categories, loading, error } = useSelector((state) => state.products);
+  const { trending, trendingLoading, bestSellers, bestSellersLoading } = useSelector(
+    (state) => state.featured
+  );
 
   useEffect(() => {
-    dispatch(fetchProducts());
+    dispatch(fetchTrending(10));
+    dispatch(fetchBestSellers(10));
     if (isLoggedIn()) dispatch(fetchFavorites());
   }, [dispatch]);
 
@@ -20,21 +25,15 @@ export default function Home() {
     <div>
       <Herobanner />
 
-      {loading && (
-        <p className="text-center py-10 text-sm text-gray-400">Loading products...</p>
+      {!trendingLoading && trending.length > 0 && (
+        <TrendingCarousel title="Trending Collection" products={trending} />
       )}
 
-      {error && (
-        <p className="text-center py-10 text-sm text-red-500">{error}</p>
+      {!bestSellersLoading && bestSellers.length > 0 && (
+        <ProductShowcase title="Best Sale" products={bestSellers} />
       )}
 
-      {!loading && !error && categories.length === 0 && (
-        <p className="text-center py-10 text-sm text-gray-400">No products available yet.</p>
-      )}
-
-      {categories.map((cat) => (
-        <ProductShowcase key={cat.category} title={cat.category} products={cat.products} />
-      ))}
+      <CustomPromoBanner />
     </div>
   )
 }
