@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Herobanner from './Herobanner/Herobanner'
-import ProductShowcase from './ProductShowcase/ProductShowcase'
+import TrustBadges from './TrustBadges/TrustBadges'
 import TrendingCarousel from './TrendingCarousel/TrendingCarousel'
+import BestSaleShowcase from './BestSaleShowcase/BestSaleShowcase'
 import CustomPromoBanner from './CustomPromoBanner/CustomPromoBanner'
 import { fetchTrending, fetchBestSellers } from '../../../redux/slices/featuredSlice'
 import { fetchFavorites } from '../../../redux/slices/favoriteSlice'
@@ -25,15 +26,17 @@ export default function Home() {
     <div>
       <Herobanner />
 
+      <TrustBadges />
+
       {!trendingLoading && trending.length > 0 && (
         <TrendingCarousel title="Trending Collection" products={trending} />
       )}
 
-      {!bestSellersLoading && bestSellers.length > 0 && (
-        <ProductShowcase title="Best Sale" products={bestSellers} />
-      )}
-
       <CustomPromoBanner />
+
+      {!bestSellersLoading && bestSellers.length > 0 && (
+        <BestSaleShowcase title="Best Sale" products={bestSellers} />
+      )}
     </div>
   )
 }

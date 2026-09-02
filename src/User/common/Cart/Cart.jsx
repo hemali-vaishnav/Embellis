@@ -67,7 +67,7 @@ export default function Cart() {
                 key={item._id}
                 className="flex items-center gap-4 rounded-2xl border border-[#3d2b1a]/10 bg-white p-4"
               >
-                <div className="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300 text-2xl font-semibold uppercase">
+                <div className="w-28 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300 text-2xl font-semibold uppercase">
                   {item.product?.image_1 ? (
                     <img
                       src={item.product.image_1}
