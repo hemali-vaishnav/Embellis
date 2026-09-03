@@ -17,11 +17,15 @@ export default function GenderCollection({ category, title }) {
   const dispatch = useDispatch();
   const { categories, loading, error } = useSelector((state) => state.products);
   const [activeSubCategory, setActiveSubCategory] = useState('');
+  const loggedIn = isLoggedIn();
 
   useEffect(() => {
     dispatch(fetchProducts({ category, subCategory: activeSubCategory || undefined }));
-    if (isLoggedIn()) dispatch(fetchFavorites());
   }, [dispatch, category, activeSubCategory]);
+
+  useEffect(() => {
+    if (loggedIn) dispatch(fetchFavorites());
+  }, [dispatch, loggedIn]);
 
   const productGroup = categories[0];
 

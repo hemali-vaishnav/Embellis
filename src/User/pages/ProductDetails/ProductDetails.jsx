@@ -19,12 +19,16 @@ export default function ProductDetails() {
   const [activeImage, setActiveImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [justAdded, setJustAdded] = useState(false);
+  const loggedIn = isLoggedIn();
 
   useEffect(() => {
     dispatch(fetchProductById(id));
-    if (isLoggedIn()) dispatch(fetchFavorites());
     return () => dispatch(clearSelectedProduct());
   }, [dispatch, id]);
+
+  useEffect(() => {
+    if (loggedIn) dispatch(fetchFavorites());
+  }, [dispatch, loggedIn]);
 
   useEffect(() => {
     setActiveImage(0);

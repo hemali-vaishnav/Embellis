@@ -16,11 +16,16 @@ export default function Home() {
     (state) => state.featured
   );
 
+  const loggedIn = isLoggedIn();
+
   useEffect(() => {
     dispatch(fetchTrending(10));
     dispatch(fetchBestSellers(10));
-    if (isLoggedIn()) dispatch(fetchFavorites());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (loggedIn) dispatch(fetchFavorites());
+  }, [dispatch, loggedIn]);
 
   return (
     <div>

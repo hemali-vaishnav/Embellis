@@ -43,13 +43,14 @@ export default function Header() {
   const authModal = useSelector((state) => state.authModal.step);
   const [verifiedEmail, setVerifiedEmail] = useState("");
   // null | "verify-phone" | "signup"
+  const loggedIn = hasAuthData();
 
   useEffect(() => {
-    if (hasAuthData()) {
+    if (loggedIn) {
       dispatch(fetchCart());
       dispatch(fetchFavorites());
     }
-  }, [dispatch]);
+  }, [dispatch, loggedIn]);
 
   const handleAccountClick = () => {
     if (hasAuthData()) {
@@ -190,7 +191,7 @@ export default function Header() {
           {isAdmin() && (
             <Link
               to="/admin/catalog"
-              className="hidden md:flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-white bg-[#3d2b1a] px-3 py-2 rounded-full hover:bg-[#2f2115] transition"
+              className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-white bg-[#3d2b1a] px-3 py-2 rounded-full hover:bg-[#2f2115] transition"
             >
               <FiSettings className="w-4 h-4" />
               Admin Panel

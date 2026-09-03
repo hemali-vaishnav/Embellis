@@ -23,13 +23,17 @@ export default function HandworkCollections() {
   const dispatch = useDispatch();
   const { categories, loading, error } = useSelector((state) => state.products);
   const [activeSubCategory, setActiveSubCategory] = useState('');
+  const loggedIn = isLoggedIn();
 
   useEffect(() => {
     dispatch(
       fetchProducts({ category: 'Handwork', gender: genderLabel, subCategory: activeSubCategory || undefined })
     );
-    if (isLoggedIn()) dispatch(fetchFavorites());
   }, [dispatch, genderLabel, activeSubCategory]);
+
+  useEffect(() => {
+    if (loggedIn) dispatch(fetchFavorites());
+  }, [dispatch, loggedIn]);
 
   const handworkCategory = categories[0];
 
