@@ -11,12 +11,7 @@ import VerifyOtp from "../../../Auth/VerifyOtp/VerifyOtp";
 import { fetchCart } from "../../../redux/slices/cartSlice";
 import { fetchFavorites } from "../../../redux/slices/favoriteSlice";
 import { openAuthModal, setAuthStep, closeAuthModal } from "../../../redux/slices/authModalSlice";
-
-const hasAuthData = () => {
-  return Boolean(localStorage.getItem("token") || localStorage.getItem("user"));
-};
-
-const isAdmin = () => localStorage.getItem("role") === "admin";
+import { useIsLoggedIn, useIsAdmin } from "../../../commonfunction/useAuthState";
 
 const CartIcon = ({ className }) => (
   <svg
@@ -43,7 +38,8 @@ export default function Header() {
   const authModal = useSelector((state) => state.authModal.step);
   const [verifiedEmail, setVerifiedEmail] = useState("");
   // null | "verify-phone" | "signup"
-  const loggedIn = hasAuthData();
+  const loggedIn = useIsLoggedIn();
+  const isAdmin = useIsAdmin();
 
   useEffect(() => {
     if (loggedIn) {
@@ -53,7 +49,7 @@ export default function Header() {
   }, [dispatch, loggedIn]);
 
   const handleAccountClick = () => {
-    if (hasAuthData()) {
+    if (loggedIn) {
       navigate("/profile");
       return;
     }
@@ -188,7 +184,7 @@ export default function Header() {
           </div>
 
           {/* Admin Panel */}
-          {isAdmin() && (
+          {isAdmin && (
             <Link
               to="/admin/catalog"
               className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-white bg-[#3d2b1a] px-3 py-2 rounded-full hover:bg-[#2f2115] transition"

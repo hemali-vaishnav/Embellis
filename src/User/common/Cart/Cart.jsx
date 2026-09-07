@@ -1,15 +1,15 @@
 import React, { useEffect } from "react";
+import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { FiTrash2, FiMinus, FiPlus } from "react-icons/fi";
 import { fetchCart, updateCartItem, removeFromCart, clearCart } from "../../../redux/slices/cartSlice";
 import { openAuthModal } from "../../../redux/slices/authModalSlice";
-
-const isLoggedIn = () => Boolean(localStorage.getItem("token"));
+import { useIsLoggedIn } from "../../../commonfunction/useAuthState";
 
 export default function Cart() {
   const dispatch = useDispatch();
   const { items, loading, error } = useSelector((state) => state.cart);
-  const loggedIn = isLoggedIn();
+  const loggedIn = useIsLoggedIn();
 
   useEffect(() => {
     if (loggedIn) dispatch(fetchCart());
@@ -67,24 +67,29 @@ export default function Cart() {
                 key={item._id}
                 className="flex items-center gap-4 rounded-2xl border border-[#3d2b1a]/10 bg-white p-4"
               >
-                <div className="w-28 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300 text-2xl font-semibold uppercase">
-                  {item.product?.image_1 ? (
-                    <img
-                      src={item.product.image_1}
-                      alt={item.product.product_name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    item.product?.product_name?.[0] || "?"
-                  )}
-                </div>
+                <Link
+                  to={`/product/${item.product?._id}`}
+                  className="flex flex-1 items-center gap-4 min-w-0"
+                >
+                  <div className="w-28 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300 text-2xl font-semibold uppercase">
+                    {item.product?.image_1 ? (
+                      <img
+                        src={item.product.image_1}
+                        alt={item.product.product_name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      item.product?.product_name?.[0] || "?"
+                    )}
+                  </div>
 
-                <div className="flex-1">
-                  <h3 className="font-medium text-[#2f241b]">{item.product?.product_name}</h3>
-                  <p className="text-sm text-[#8a5a35]">
-                    {item.size && <>Size: {item.size} · </>}Rs.{item.product?.price}
-                  </p>
-                </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-[#2f241b] hover:underline">{item.product?.product_name}</h3>
+                    <p className="text-sm text-[#8a5a35]">
+                      {item.size && <>Size: {item.size} · </>}Rs.{item.product?.price}
+                    </p>
+                  </div>
+                </Link>
 
                 <div className="flex items-center gap-2">
                   <button
@@ -94,6 +99,7 @@ export default function Cart() {
                         : dispatch(removeFromCart(item._id))
                     }
                     className="w-8 h-8 flex items-center justify-center rounded-full border border-[#3d2b1a]/20 hover:border-[#3d2b1a]"
+                    aria-label="Decrease quantity"
                   >
                     <FiMinus size={14} />
                   </button>
@@ -101,6 +107,7 @@ export default function Cart() {
                   <button
                     onClick={() => dispatch(updateCartItem({ itemId: item._id, quantity: item.quantity + 1 }))}
                     className="w-8 h-8 flex items-center justify-center rounded-full border border-[#3d2b1a]/20 hover:border-[#3d2b1a]"
+                    aria-label="Increase quantity"
                   >
                     <FiPlus size={14} />
                   </button>

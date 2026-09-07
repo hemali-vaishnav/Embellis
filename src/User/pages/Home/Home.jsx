@@ -7,8 +7,7 @@ import BestSaleShowcase from './BestSaleShowcase/BestSaleShowcase'
 import CustomPromoBanner from './CustomPromoBanner/CustomPromoBanner'
 import { fetchTrending, fetchBestSellers } from '../../../redux/slices/featuredSlice'
 import { fetchFavorites } from '../../../redux/slices/favoriteSlice'
-
-const isLoggedIn = () => Boolean(localStorage.getItem('token'));
+import { useIsLoggedIn } from '../../../commonfunction/useAuthState'
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -16,7 +15,7 @@ export default function Home() {
     (state) => state.featured
   );
 
-  const loggedIn = isLoggedIn();
+  const loggedIn = useIsLoggedIn();
 
   useEffect(() => {
     dispatch(fetchTrending(10));

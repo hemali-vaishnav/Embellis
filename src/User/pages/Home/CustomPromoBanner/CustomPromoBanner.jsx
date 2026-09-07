@@ -1,26 +1,28 @@
 import { Link } from "react-router";
 
+const ORBIT_DURATION = 18; // seconds for one full lap of the loop
+
 const STEPS = [
   {
     photo: "/assets/process/design.jpg",
     title: "We Design It",
     desc: "Your idea, sketched to life",
     left: 50,
-    top: 14,
+    top: 16,
   },
   {
     photo: "/assets/process/stitch.jpg",
     title: "We Stitch It",
     desc: "Handcrafted with care",
     left: 84,
-    top: 78,
+    top: 76,
   },
   {
     photo: "/assets/process/pack.jpg",
     title: "We Pack It",
     desc: "Sealed up & sent to you",
     left: 16,
-    top: 78,
+    top: 76,
   },
 ];
 
@@ -34,7 +36,7 @@ export default function CustomPromoBanner() {
       </p>
 
       {/* How we make it — a continuous loop */}
-      <div className="relative max-w-md mx-auto h-[360px] sm:h-[400px] my-10">
+      <div className="relative max-w-md mx-auto h-95 sm:h-105 my-10">
         <svg
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
@@ -79,11 +81,15 @@ export default function CustomPromoBanner() {
           />
         </svg>
 
-        {STEPS.map((step) => (
+        {STEPS.map((step, i) => (
           <div
             key={step.title}
-            className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-32 sm:w-36"
-            style={{ left: `${step.left}%`, top: `${step.top}%` }}
+            className="promo-orbit-step absolute flex flex-col items-center w-32 sm:w-36"
+            style={{
+              "--static-left": `${step.left}%`,
+              "--static-top": `${step.top}%`,
+              animationDelay: `${-(i * ORBIT_DURATION) / 3}s`,
+            }}
           >
             <span className="block w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden ring-4 ring-white/15 shadow-xl">
               <img src={step.photo} alt={step.title} className="w-full h-full object-cover" />
@@ -104,6 +110,32 @@ export default function CustomPromoBanner() {
       >
         Start Customizing
       </Link>
+
+      <style>{`
+        @keyframes promoOrbit {
+          0%     { left: 50%; top: 16%; transform: translate(-50%, -50%) scale(1); }
+          16.65% { left: 78%; top: 38%; transform: translate(-50%, -50%) scale(1.05); }
+          33.3%  { left: 84%; top: 76%; transform: translate(-50%, -50%) scale(1); }
+          50%    { left: 50%; top: 82%; transform: translate(-50%, -50%) scale(1.05); }
+          66.7%  { left: 16%; top: 76%; transform: translate(-50%, -50%) scale(1); }
+          83.35% { left: 22%; top: 38%; transform: translate(-50%, -50%) scale(1.05); }
+          100%   { left: 50%; top: 16%; transform: translate(-50%, -50%) scale(1); }
+        }
+        .promo-orbit-step {
+          left: var(--static-left);
+          top: var(--static-top);
+          transform: translate(-50%, -50%);
+          animation: promoOrbit ${ORBIT_DURATION}s ease-in-out infinite;
+        }
+        .promo-orbit-step:hover {
+          animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .promo-orbit-step {
+            animation: none;
+          }
+        }
+      `}</style>
     </section>
   );
 }

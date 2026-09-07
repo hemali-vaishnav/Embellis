@@ -12,7 +12,9 @@ import HandworkCollections from "../User/pages/HandworkCollections/HandworkColle
 import AdminGuard from "../Admin/AdminGuard";
 import AdminLayout from "../Admin/AdminLayout";
 import UploadCatalog from "../Admin/pages/Catalog/UploadCatalog";
+import Products from "../Admin/pages/Products/Products";
 import Users from "../Admin/pages/Users/Users";
+import CartWishlist from "../Admin/pages/CartWishlist/CartWishlist";
 import CustomOrders from "../Admin/pages/CustomOrders/CustomOrders";
 
 const router = createBrowserRouter([
@@ -77,8 +79,16 @@ const router = createBrowserRouter([
                 element: <UploadCatalog />,
             },
             {
+                path: "products",
+                element: <Products />,
+            },
+            {
                 path: "users",
                 element: <Users />,
+            },
+            {
+                path: "cart-wishlist",
+                element: <CartWishlist />,
             },
             {
                 path: "custom-orders",
@@ -87,4 +97,5 @@ const router = createBrowserRouter([
         ],
     },
 ])
+
 export default router;

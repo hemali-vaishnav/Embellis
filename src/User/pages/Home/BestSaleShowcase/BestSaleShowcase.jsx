@@ -5,8 +5,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../../../redux/slices/cartSlice";
 import { toggleFavorite } from "../../../../redux/slices/favoriteSlice";
 import { openAuthModal } from "../../../../redux/slices/authModalSlice";
+import { getAuthItem } from "../../../../commonfunction/authStorage";
 
-const isLoggedIn = () => Boolean(localStorage.getItem("token"));
+const isLoggedIn = () => Boolean(getAuthItem("token"));
 
 export default function BestSaleShowcase({ title = "Best Sale", products = [] }) {
   const dispatch = useDispatch();

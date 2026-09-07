@@ -1,11 +1,13 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { baseUrl } from "../../../utils/url";
+import { notifyAuthChange } from "../../commonfunction/useAuthState";
+import { setAuthData } from "../../commonfunction/authStorage";
 
 const getFirstName = (name = "") => name.trim().split(/\s+/)[0] || "";
 
 export const signupUser = createAsyncThunk(
   "signup/signupUser",
-  async ({ name, email, phone, isEmailVerified }, { rejectWithValue }) => {
+  async ({ name, email, phone, isEmailVerified, remember = false }, { rejectWithValue }) => {
     try {
       const res = await fetch(`${baseUrl}/users/signup`, {
         method: "POST",
@@ -21,25 +23,18 @@ export const signupUser = createAsyncThunk(
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Signup failed");
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
+      setAuthData(
+        {
+          token: data.token,
+          user: data.user?.name ? getFirstName(data.user.name) : undefined,
+          email: data.user?.email,
+          role: data.user?.role,
+          phone: data.user?.phone,
+        },
+        remember
+      );
 
-      if (data.user?.name) {
-        localStorage.setItem("user", getFirstName(data.user.name));
-      }
-
-      if (data.user?.email) {
-        localStorage.setItem("email", data.user.email);
-      }
-
-      if (data.user?.role) {
-        localStorage.setItem("role", data.user.role);
-      }
-      
-      if (data.user?.phone) {
-        localStorage.setItem("phone", data.user.phone);
-      }
+      notifyAuthChange();
 
       return data;
     } catch (err) {

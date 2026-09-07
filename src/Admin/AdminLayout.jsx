@@ -1,19 +1,44 @@
 import React from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router";
-import { FiGrid, FiUsers, FiScissors, FiLogOut, FiShoppingBag } from "react-icons/fi";
+import { useDispatch } from "react-redux";
+import { FiGrid, FiBox, FiUsers, FiShoppingCart, FiScissors, FiLogOut, FiShoppingBag } from "react-icons/fi";
+import { baseUrl } from "../../utils/url";
+import { resetCart } from "../redux/slices/cartSlice";
+import { resetFavorites } from "../redux/slices/favoriteSlice";
+import { notifyAuthChange } from "../commonfunction/useAuthState";
+import { getAuthItem, clearAuthData } from "../commonfunction/authStorage";
 
 const navItems = [
   { to: "/admin/catalog", label: "Catalog", icon: <FiGrid /> },
+  { to: "/admin/products", label: "Products", icon: <FiBox /> },
   { to: "/admin/users", label: "Users", icon: <FiUsers /> },
+  { to: "/admin/cart-wishlist", label: "Cart & Wishlist", icon: <FiShoppingCart /> },
   { to: "/admin/custom-orders", label: "Custom Orders", icon: <FiScissors /> },
 ];
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
+  const handleLogout = async () => {
+    const token = getAuthItem("token");
+
+    try {
+      if (token) {
+        await fetch(`${baseUrl}/users/logout`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+    } catch {
+      // Still log the user out locally even if the request fails.
+    } finally {
+      clearAuthData();
+      notifyAuthChange();
+      dispatch(resetCart());
+      dispatch(resetFavorites());
+      navigate("/");
+    }
   };
 
   return (

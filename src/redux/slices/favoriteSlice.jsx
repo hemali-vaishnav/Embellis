@@ -1,8 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { baseUrl } from "../../../utils/url";
+import { getAuthItem } from "../../commonfunction/authStorage";
 
 const authHeaders = (json = true) => {
-  const token = localStorage.getItem("token");
+  const token = getAuthItem("token");
   return {
     ...(json ? { "Content-Type": "application/json" } : {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -52,7 +53,12 @@ const favoriteSlice = createSlice({
     loading: false,
     error: "",
   },
-  reducers: {},
+  reducers: {
+    resetFavorites: (state) => {
+      state.favorites = [];
+      state.error = "";
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchFavorites.pending, (state) => {
@@ -73,4 +79,5 @@ const favoriteSlice = createSlice({
   },
 });
 
+export const { resetFavorites } = favoriteSlice.actions;
 export default favoriteSlice.reducer;

@@ -1,66 +1,38 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { FiUploadCloud, FiCheckCircle, FiAlertCircle, FiRefreshCw, FiFile, FiSearch } from "react-icons/fi";
+import { FiUploadCloud, FiCheckCircle, FiAlertCircle, FiFile, FiArrowRight } from "react-icons/fi";
 import { AgGridReact } from "ag-grid-react";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { uploadCatalog, fetchCatalog, clearUploadResult } from "../../../redux/slices/catalogSlice";
+import { columnDefs, defaultColDef } from "./catalogGridConfig";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const ACCEPTED_TYPES = ".xlsx,.xls,.csv";
 
-const imageCellRenderer = (p) =>
-  p.value ? (
-    <img
-      src={p.value}
-      alt=""
-      style={{ width: 36, height: 36, objectFit: "cover", borderRadius: 6, margin: "3px 0" }}
-    />
-  ) : (
-    <span style={{ color: "#aaa" }}>-</span>
-  );
+const RECENT_UPLOADS_KEY = "admin_recent_catalog_uploads";
+const RECENT_WINDOW_MS = 24 * 60 * 60 * 1000; // a category drops off this page 24h after its last upload
 
-const columnDefs = [
-  {
-    field: "image_1",
-    headerName: "Image 1",
-    minWidth: 80,
-    maxWidth: 80,
-    sortable: false,
-    filter: false,
-    cellRenderer: imageCellRenderer,
-  },
-  {
-    field: "image_2",
-    headerName: "Image 2",
-    minWidth: 80,
-    maxWidth: 80,
-    sortable: false,
-    filter: false,
-    cellRenderer: imageCellRenderer,
-  },
-  { field: "category", headerName: "Category", minWidth: 130 },
-  { field: "product_name", headerName: "Product", minWidth: 180, flex: 1.4 },
-  { field: "gender", headerName: "Gender", minWidth: 110, valueFormatter: (p) => p.value || "-" },
-  { field: "sub_category", headerName: "Sub Category", minWidth: 140, valueFormatter: (p) => p.value || "-" },
-  { field: "type", headerName: "Type", minWidth: 130, valueFormatter: (p) => p.value || "-" },
-  { field: "size", headerName: "Size", minWidth: 100 },
-  {
-    field: "price",
-    headerName: "Price",
-    minWidth: 110,
-    type: "numericColumn",
-    valueFormatter: (p) => (p.value != null ? `₹${p.value}` : ""),
-  },
-  { field: "stock", headerName: "Stock", minWidth: 100, type: "numericColumn" },
-  { field: "is_trending", headerName: "Trending", minWidth: 100, cellRenderer: (p) => (p.value ? "✅" : "—") },
-  { field: "is_best_seller", headerName: "Best Seller", minWidth: 110, cellRenderer: (p) => (p.value ? "✅" : "—") },
-];
+const readRecentUploads = () => {
+  try {
+    const raw = localStorage.getItem(RECENT_UPLOADS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
 
-const defaultColDef = {
-  sortable: true,
-  filter: true,
-  resizable: true,
+const recordUpload = (categoryNames, uploadedAt) => {
+  const byCategory = new Map(readRecentUploads().map((e) => [e.category, e]));
+  categoryNames.forEach((category) => byCategory.set(category, { category, uploadedAt }));
+  localStorage.setItem(RECENT_UPLOADS_KEY, JSON.stringify([...byCategory.values()]));
+};
+
+const timeAgo = (ms) => {
+  const minutes = Math.max(1, Math.round(ms / 60000));
+  if (minutes < 60) return `${minutes}m ago`;
+  return `${Math.round(minutes / 60)}h ago`;
 };
 
 export default function UploadCatalog() {
@@ -68,23 +40,38 @@ export default function UploadCatalog() {
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
-  const [quickFilter, setQuickFilter] = useState("");
+  const [now, setNow] = useState(() => Date.now());
 
-  const { uploading, uploadError, uploadResult, categories, loading, error } = useSelector(
-    (state) => state.catalog
-  );
-
-  const rowData = useMemo(
-    () =>
-      categories.flatMap((cat) =>
-        (cat.products || []).map((p) => ({ ...p, category: cat.category }))
-      ),
-    [categories]
-  );
+  const { uploading, uploadError, uploadResult, categories } = useSelector((state) => state.catalog);
 
   useEffect(() => {
     dispatch(fetchCatalog());
   }, [dispatch]);
+
+  // Ticks once a minute so a category's table disappears on its own once the 24h window passes,
+  // even if the admin leaves this page open the whole time.
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const recentUploads = useMemo(() => {
+    const entries = readRecentUploads();
+    const stillValid = entries.filter((e) => now - e.uploadedAt < RECENT_WINDOW_MS);
+    if (stillValid.length !== entries.length) {
+      localStorage.setItem(RECENT_UPLOADS_KEY, JSON.stringify(stillValid));
+    }
+    return stillValid;
+  }, [now]);
+
+  const sections = useMemo(
+    () =>
+      recentUploads.map((entry) => {
+        const group = categories.find((c) => c.category === entry.category);
+        return { ...entry, rowData: group?.products || [] };
+      }),
+    [recentUploads, categories]
+  );
 
   const handleFile = (file) => {
     if (!file) return;
@@ -104,16 +91,21 @@ export default function UploadCatalog() {
     if (uploadCatalog.fulfilled.match(result)) {
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+
+      const uploadedCategories = result.payload?.categories || [];
+      if (uploadedCategories.length) {
+        recordUpload(uploadedCategories, Date.now());
+        setNow(Date.now());
+      }
+
       dispatch(fetchCatalog());
     }
   };
 
-  const totalProducts = categories.reduce((sum, c) => sum + (c.products?.length || 0), 0);
-
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-2xl font-semibold">Product Catalog</h1>
+        <h1 className="text-2xl font-semibold">Upload Catalog</h1>
         <p className="text-sm text-gray-500 mt-1">
           Upload an Excel/CSV file to bulk add products. Expected columns: product_name, price,
           size, type, stock, category, sub_category, gender, description, image_1, image_2,
@@ -183,59 +175,51 @@ export default function UploadCatalog() {
         )}
       </section>
 
-      {/* CATALOG LIST */}
+      {/* RECENTLY UPLOADED (last 24h only) */}
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h2 className="text-lg font-medium">
-            Current Catalog {!loading && <span className="text-sm text-gray-400">({totalProducts} products)</span>}
-          </h2>
-
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-              <input
-                type="text"
-                value={quickFilter}
-                onChange={(e) => setQuickFilter(e.target.value)}
-                placeholder="Search products..."
-                className="pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:border-black"
-              />
-            </div>
-            <button
-              onClick={() => dispatch(fetchCatalog())}
-              className="flex items-center gap-2 text-sm px-4 py-2 rounded-lg border border-gray-300 hover:border-black transition"
-            >
-              <FiRefreshCw className={loading ? "animate-spin" : ""} />
-              Refresh
-            </button>
-          </div>
+          <h2 className="text-lg font-medium">Recently Uploaded</h2>
+          <Link
+            to="/admin/products"
+            className="flex items-center gap-1.5 text-sm font-medium text-black hover:underline"
+          >
+            View full catalog <FiArrowRight />
+          </Link>
         </div>
 
-        {error && (
-          <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-            <FiAlertCircle />
-            {error}
-          </div>
-        )}
-
-        {loading ? (
-          <p className="text-sm text-gray-400">Loading catalog...</p>
-        ) : categories.length === 0 ? (
-          <p className="text-sm text-gray-400">No products uploaded yet.</p>
+        {sections.length === 0 ? (
+          <p className="text-sm text-gray-400">
+            Nothing uploaded in the last 24 hours. Once you upload a file, its category shows up
+            here for a day — after that, find it on the full{" "}
+            <Link to="/admin/products" className="underline">
+              Products
+            </Link>{" "}
+            page.
+          </p>
         ) : (
-          <div className="rounded-xl border overflow-hidden" style={{ height: 500 }}>
-            <AgGridReact
-              rowData={rowData}
-              getRowId={(params) => params.data._id}
-              columnDefs={columnDefs}
-              defaultColDef={defaultColDef}
-              quickFilterText={quickFilter}
-              pagination={true}
-              paginationPageSize={20}
-              paginationPageSizeSelector={[20, 50, 100]}
-              animateRows={true}
-            />
-          </div>
+          sections.map(({ category, rowData, uploadedAt }) => (
+            <div key={category} className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <h3 className="text-sm font-semibold text-gray-700">
+                  {category} <span className="text-gray-400 font-normal">({rowData.length} products)</span>
+                </h3>
+                <span className="text-xs text-gray-400">uploaded {timeAgo(now - uploadedAt)}</span>
+              </div>
+
+              <div className="rounded-xl border overflow-hidden" style={{ height: 320 }}>
+                <AgGridReact
+                  rowData={rowData}
+                  getRowId={(params) => params.data._id}
+                  columnDefs={columnDefs}
+                  defaultColDef={defaultColDef}
+                  pagination={true}
+                  paginationPageSize={10}
+                  paginationPageSizeSelector={[10, 20, 50]}
+                  animateRows={true}
+                />
+              </div>
+            </div>
+          ))
         )}
       </section>
     </div>

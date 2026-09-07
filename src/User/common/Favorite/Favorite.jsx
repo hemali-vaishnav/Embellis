@@ -5,13 +5,12 @@ import { FiHeart } from "react-icons/fi";
 import { fetchFavorites, toggleFavorite } from "../../../redux/slices/favoriteSlice";
 import { addToCart } from "../../../redux/slices/cartSlice";
 import { openAuthModal } from "../../../redux/slices/authModalSlice";
-
-const isLoggedIn = () => Boolean(localStorage.getItem("token"));
+import { useIsLoggedIn } from "../../../commonfunction/useAuthState";
 
 export default function Favorite() {
   const dispatch = useDispatch();
   const { favorites, loading, error } = useSelector((state) => state.favorites);
-  const loggedIn = isLoggedIn();
+  const loggedIn = useIsLoggedIn();
 
   useEffect(() => {
     if (loggedIn) dispatch(fetchFavorites());

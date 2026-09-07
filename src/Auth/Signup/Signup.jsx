@@ -6,6 +6,7 @@ import { signupUser } from "../../redux/slices/signupSlice";
 export default function Signup({ email: verifiedEmail = "", onClose, onSuccess }) {
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.signup);
+  const rememberMe = useSelector((state) => state.authModal.rememberMe);
   const [fullName, setFullName] = useState("");
   const [mobile, setMobile] = useState("");
   const email = verifiedEmail;
@@ -24,6 +25,7 @@ export default function Signup({ email: verifiedEmail = "", onClose, onSuccess }
           email,
           phone: mobile,
           isEmailVerified,
+          remember: rememberMe,
         })
       ).unwrap();
 

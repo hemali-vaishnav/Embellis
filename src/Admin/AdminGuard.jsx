@@ -1,11 +1,12 @@
 import React from "react";
 import { Navigate } from "react-router";
+import { useIsLoggedIn, useIsAdmin } from "../commonfunction/useAuthState";
 
 export default function AdminGuard({ children }) {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const loggedIn = useIsLoggedIn();
+  const isAdmin = useIsAdmin();
 
-  if (!token || role !== "admin") {
+  if (!loggedIn || !isAdmin) {
     return <Navigate to="/" replace />;
   }
 

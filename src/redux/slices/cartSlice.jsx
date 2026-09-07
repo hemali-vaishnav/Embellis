@@ -1,8 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { baseUrl } from "../../../utils/url";
+import { getAuthItem } from "../../commonfunction/authStorage";
 
 const authHeaders = (json = true) => {
-  const token = localStorage.getItem("token");
+  const token = getAuthItem("token");
   return {
     ...(json ? { "Content-Type": "application/json" } : {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -101,7 +102,12 @@ const cartSlice = createSlice({
     loading: false,
     error: "",
   },
-  reducers: {},
+  reducers: {
+    resetCart: (state) => {
+      state.items = [];
+      state.error = "";
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchCart.pending, (state) => {
@@ -139,4 +145,5 @@ const cartSlice = createSlice({
   },
 });
 
+export const { resetCart } = cartSlice.actions;
 export default cartSlice.reducer;

@@ -1,25 +1,27 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { FiHeart, FiChevronLeft } from "react-icons/fi";
-import { fetchProductById, clearSelectedProduct } from "../../../redux/slices/productSlice";
+import { FiHeart, FiChevronLeft, FiMinus, FiPlus } from "react-icons/fi";
+import { fetchProductById, clearSelectedProduct, fetchProducts } from "../../../redux/slices/productSlice";
 import { addToCart } from "../../../redux/slices/cartSlice";
 import { fetchFavorites, toggleFavorite } from "../../../redux/slices/favoriteSlice";
 import { openAuthModal } from "../../../redux/slices/authModalSlice";
-
-const isLoggedIn = () => Boolean(localStorage.getItem("token"));
+import { useIsLoggedIn } from "../../../commonfunction/useAuthState";
+import TrustBadges from "../Home/TrustBadges/TrustBadges";
+import ProductShowcase from "../Home/ProductShowcase/ProductShowcase";
 
 export default function ProductDetails() {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { selectedProduct: product, selectedLoading: loading, selectedError: error } = useSelector(
+  const { selectedProduct: product, selectedLoading: loading, selectedError: error, categories } = useSelector(
     (state) => state.products
   );
   const { favorites } = useSelector((state) => state.favorites);
   const [activeImage, setActiveImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
-  const loggedIn = isLoggedIn();
+  const loggedIn = useIsLoggedIn();
 
   useEffect(() => {
     dispatch(fetchProductById(id));
@@ -33,7 +35,12 @@ export default function ProductDetails() {
   useEffect(() => {
     setActiveImage(0);
     setSelectedSize(product?.size?.split(",")[0]?.trim() || "");
+    setQuantity(1);
   }, [product]);
+
+  useEffect(() => {
+    if (product?.category) dispatch(fetchProducts({ category: product.category }));
+  }, [dispatch, product?.category]);
 
   const images = useMemo(
     () => [product?.image_1, product?.image_2].filter(Boolean),
@@ -50,8 +57,13 @@ export default function ProductDetails() {
     [favorites, product]
   );
 
+  const relatedProducts = useMemo(
+    () => (categories[0]?.products || []).filter((p) => p._id !== product?._id).slice(0, 4),
+    [categories, product]
+  );
+
   const handleToggleFavorite = () => {
-    if (!isLoggedIn()) {
+    if (!loggedIn) {
       dispatch(openAuthModal());
       return;
     }
@@ -59,138 +71,203 @@ export default function ProductDetails() {
   };
 
   const handleAddToCart = () => {
-    if (!isLoggedIn()) {
+    if (!loggedIn) {
       dispatch(openAuthModal());
       return;
     }
-    dispatch(addToCart({ productId: product._id, quantity: 1, size: selectedSize }));
+    dispatch(addToCart({ productId: product._id, quantity, size: selectedSize }));
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1500);
   };
 
   if (loading) {
     return (
-      <div className="pt-32 pb-20 text-center text-sm text-gray-400">Loading product...</div>
+      <section className="min-h-screen bg-[#fbf7ef] px-6 pt-32 pb-16">
+        <p className="text-center text-sm text-[#8a5a35]">Loading product...</p>
+      </section>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="pt-32 pb-20 text-center text-sm text-red-500">
-        {error || "Product not found."}
-      </div>
+      <section className="min-h-screen bg-[#fbf7ef] px-6 pt-32 pb-16">
+        <p className="text-center text-sm text-red-500">{error || "Product not found."}</p>
+      </section>
     );
   }
 
   return (
-    <div className="pt-28 pb-20 px-6 max-w-6xl mx-auto">
-      <Link to="/" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-black mb-8">
-        <FiChevronLeft />
-        Back
-      </Link>
+    <div className="bg-[#fbf7ef]">
+      <section className="px-6 pt-32 pb-16">
+        <div className="mx-auto max-w-6xl">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1 text-sm text-[#8a5a35] hover:text-[#3d2b1a] mb-8 transition"
+          >
+            <FiChevronLeft />
+            Back
+          </Link>
 
-      <div className="grid md:grid-cols-2 gap-12">
-        {/* Images */}
-        <div>
-          <div className="relative bg-gray-100 rounded-2xl overflow-hidden">
-            {images.length > 0 ? (
-              <img
-                src={images[activeImage]}
-                alt={product.product_name}
-                className="w-full h-[520px] object-cover"
-              />
-            ) : (
-              <div className="w-full h-[520px] flex items-center justify-center text-gray-300 text-8xl font-semibold uppercase">
-                {product.product_name?.[0] || "?"}
-              </div>
-            )}
+          <div className="grid md:grid-cols-2 gap-14">
+            {/* Images */}
+            <div>
+              <div className="relative bg-white rounded-2xl overflow-hidden shadow-sm group">
+                {images.length > 0 ? (
+                  <img
+                    src={images[activeImage]}
+                    alt={product.product_name}
+                    className="w-full h-140 object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-140 flex items-center justify-center bg-[#f5f1e8] text-[#3d2b1a]/15 text-8xl font-semibold uppercase">
+                    {product.product_name?.[0] || "?"}
+                  </div>
+                )}
 
-            <FiHeart
-              onClick={handleToggleFavorite}
-              className={`absolute top-4 right-4 text-2xl cursor-pointer transition ${
-                isLiked ? "text-red-600" : "text-white drop-shadow"
-              }`}
-              fill={isLiked ? "currentColor" : "none"}
-            />
-          </div>
+                {(product.is_trending || product.is_best_seller) && (
+                  <span className="absolute top-4 left-4 bg-[#3d2b1a] text-white text-[11px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full">
+                    {product.is_best_seller ? "Best Seller" : "Trending"}
+                  </span>
+                )}
 
-          {images.length > 1 && (
-            <div className="flex gap-3 mt-4">
-              {images.map((img, i) => (
                 <button
-                  key={i}
-                  onClick={() => setActiveImage(i)}
-                  className={`w-20 h-20 rounded-xl overflow-hidden border-2 ${
-                    activeImage === i ? "border-black" : "border-transparent"
-                  }`}
+                  onClick={handleToggleFavorite}
+                  aria-label="Toggle favorite"
+                  className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:scale-105"
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <FiHeart
+                    className={isLiked ? "text-red-600" : "text-[#3d2b1a]"}
+                    fill={isLiked ? "currentColor" : "none"}
+                  />
                 </button>
-              ))}
+              </div>
+
+              {images.length > 1 && (
+                <div className="flex gap-3 mt-4">
+                  {images.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveImage(i)}
+                      className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition ${
+                        activeImage === i
+                          ? "border-[#3d2b1a]"
+                          : "border-transparent opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Details */}
-        <div>
-          <p className="text-xs uppercase tracking-widest text-gray-400">
-            {product.category}
-            {product.sub_category && ` / ${product.sub_category}`}
-          </p>
-          <h1 className="text-3xl font-semibold mt-2">{product.product_name}</h1>
-          <p className="text-2xl font-medium mt-4">Rs.{product.price}</p>
+            {/* Details */}
+            <div className="md:pt-2">
+              <p className="text-xs uppercase tracking-[0.25em] text-[#3d2b1a]/50">
+                {product.category}
+                {product.sub_category && ` / ${product.sub_category}`}
+              </p>
+              <h1 className="text-3xl md:text-4xl font-semibold text-[#2f241b] mt-3">
+                {product.product_name}
+              </h1>
+              <p className="text-2xl text-[#3d2b1a] mt-3">Rs.{product.price}</p>
 
-          {product.description && (
-            <p className="text-gray-600 mt-4 leading-relaxed">{product.description}</p>
-          )}
+              {product.description && (
+                <p className="text-[#5c4634] mt-4 leading-relaxed">{product.description}</p>
+              )}
 
-          {sizeOptions.length > 0 && (
-            <div className="mt-8">
-              <p className="text-sm font-medium mb-2">Size</p>
-              <div className="flex flex-wrap gap-2">
-                {sizeOptions.map((size) => (
+              {sizeOptions.length > 0 && (
+                <div className="mt-8">
+                  <p className="text-xs uppercase tracking-[0.2em] text-[#8a5a35] mb-3">Size</p>
+                  <div className="flex flex-wrap gap-2">
+                    {sizeOptions.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`px-4 py-2 rounded-lg border text-sm transition ${
+                          selectedSize === size
+                            ? "bg-[#3d2b1a] text-white border-[#3d2b1a]"
+                            : "border-[#3d2b1a]/20 text-[#3d2b1a] hover:border-[#3d2b1a]"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-8">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#8a5a35] mb-3">Quantity</p>
+                <div className="inline-flex items-center gap-4 rounded-lg border border-[#3d2b1a]/20 px-3 py-1.5">
                   <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-2 rounded-lg border text-sm transition ${
-                      selectedSize === size
-                        ? "bg-black text-white border-black"
-                        : "border-gray-300 hover:border-black"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    disabled={quantity <= 1}
+                    aria-label="Decrease quantity"
+                    className="w-7 h-7 flex items-center justify-center rounded-full text-[#3d2b1a] hover:bg-[#3d2b1a]/5 disabled:opacity-30"
+                  >
+                    <FiMinus size={14} />
+                  </button>
+                  <span className="w-5 text-center text-sm font-medium text-[#2f241b]">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity((q) => Math.min(product.stock || q + 1, q + 1))}
+                    disabled={product.stock > 0 && quantity >= product.stock}
+                    aria-label="Increase quantity"
+                    className="w-7 h-7 flex items-center justify-center rounded-full text-[#3d2b1a] hover:bg-[#3d2b1a]/5 disabled:opacity-30"
+                  >
+                    <FiPlus size={14} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-8 border-t border-[#3d2b1a]/10">
+                <div className="flex items-center justify-between py-4 border-b border-[#3d2b1a]/10 text-xs uppercase tracking-[0.2em] text-[#8a5a35]">
+                  <span>Availability</span>
+                  <span
+                    className={`normal-case tracking-normal ${
+                      product.stock > 0 ? "text-[#3d2b1a]/70" : "text-red-600"
                     }`}
                   >
-                    {size}
-                  </button>
-                ))}
+                    {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                  </span>
+                </div>
+                {product.type && (
+                  <div className="flex items-center justify-between py-4 border-b border-[#3d2b1a]/10 text-xs uppercase tracking-[0.2em] text-[#8a5a35]">
+                    <span>Fabric / Type</span>
+                    <span className="text-[#3d2b1a]/70 normal-case tracking-normal">{product.type}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 mt-8">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={product.stock <= 0}
+                  className="flex-1 bg-[#3d2b1a] text-white py-3.5 rounded-xl text-sm font-semibold uppercase tracking-wider hover:bg-[#2f2115] transition disabled:opacity-40"
+                >
+                  {justAdded ? "Added to Cart ✓" : "Add to Cart"}
+                </button>
+                <button
+                  onClick={handleToggleFavorite}
+                  className="w-14 h-14 flex items-center justify-center rounded-xl border border-[#3d2b1a]/20 hover:border-[#3d2b1a] transition"
+                  aria-label="Toggle favorite"
+                >
+                  <FiHeart
+                    className={isLiked ? "text-red-600" : "text-[#3d2b1a]"}
+                    fill={isLiked ? "currentColor" : "none"}
+                  />
+                </button>
               </div>
             </div>
-          )}
-
-          <p className="text-sm text-gray-500 mt-6">
-            {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
-          </p>
-
-          <div className="flex gap-3 mt-6">
-            <button
-              onClick={handleAddToCart}
-              disabled={product.stock <= 0}
-              className="flex-1 bg-black text-white py-3.5 rounded-xl text-sm font-medium disabled:opacity-40"
-            >
-              {justAdded ? "ADDED TO CART ✓" : "ADD TO CART"}
-            </button>
-            <button
-              onClick={handleToggleFavorite}
-              className="w-14 h-14 flex items-center justify-center rounded-xl border border-gray-300 hover:border-black"
-              aria-label="Toggle favorite"
-            >
-              <FiHeart className={isLiked ? "text-red-600" : ""} fill={isLiked ? "currentColor" : "none"} />
-            </button>
           </div>
-
-          {product.type && (
-            <p className="text-sm text-gray-500 mt-6">Fabric / Type: {product.type}</p>
-          )}
         </div>
-      </div>
+      </section>
+
+      <TrustBadges />
+
+      {relatedProducts.length > 0 && (
+        <ProductShowcase title="You May Also Like" products={relatedProducts} />
+      )}
     </div>
   );
 }

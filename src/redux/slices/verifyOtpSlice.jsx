@@ -1,11 +1,13 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { baseUrl } from "../../../utils/url";
+import { notifyAuthChange } from "../../commonfunction/useAuthState";
+import { setAuthData } from "../../commonfunction/authStorage";
 
 const getFirstName = (name = "") => name.trim().split(/\s+/)[0] || "";
 
 export const verifyOtp = createAsyncThunk(
   "verifyOtp/verifyOtp",
-  async ({ email, otp }, { rejectWithValue }) => {
+  async ({ email, otp, remember = false }, { rejectWithValue }) => {
     try {
       const res = await fetch(`${baseUrl}/users/verify-otp`, {
         method: "POST",
@@ -16,25 +18,18 @@ export const verifyOtp = createAsyncThunk(
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Invalid OTP");
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
+      setAuthData(
+        {
+          token: data.token,
+          user: data.user?.name ? getFirstName(data.user.name) : undefined,
+          email: data.user?.email,
+          role: data.user?.role,
+          phone: data.user?.phone,
+        },
+        remember
+      );
 
-      if (data.user?.name) {
-        localStorage.setItem("user", getFirstName(data.user.name));
-      }
-
-      if (data.user?.email) {
-        localStorage.setItem("email", data.user.email);
-      }
-
-      if (data.user?.role) {
-        localStorage.setItem("role", data.user.role);
-      }
-      
-      if (data.user?.phone) {
-        localStorage.setItem("phone", data.user.phone);
-      }
+      notifyAuthChange();
 
       return { ...data, email: data.user?.email || email };
     } catch (err) {
@@ -52,7 +47,11 @@ const verifyOtpSlice = createSlice({
     loading: false,
     error: "",
   },
-  reducers: {},
+  reducers: {
+    clearVerifyOtpError: (state) => {
+      state.error = "";
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(verifyOtp.pending, (state) => {
@@ -72,4 +71,5 @@ const verifyOtpSlice = createSlice({
   },
 });
 
+export const { clearVerifyOtpError } = verifyOtpSlice.actions;
 export default verifyOtpSlice.reducer;

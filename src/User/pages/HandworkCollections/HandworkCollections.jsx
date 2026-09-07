@@ -5,8 +5,7 @@ import ProductShowcase from '../Home/ProductShowcase/ProductShowcase'
 import SubCategoryTabs from '../../common/SubCategoryTabs/SubCategoryTabs'
 import { fetchProducts } from '../../../redux/slices/productSlice'
 import { fetchFavorites } from '../../../redux/slices/favoriteSlice'
-
-const isLoggedIn = () => Boolean(localStorage.getItem('token'));
+import { useIsLoggedIn } from '../../../commonfunction/useAuthState'
 
 const toTitleCase = (value = '') =>
   value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
@@ -23,7 +22,7 @@ export default function HandworkCollections() {
   const dispatch = useDispatch();
   const { categories, loading, error } = useSelector((state) => state.products);
   const [activeSubCategory, setActiveSubCategory] = useState('');
-  const loggedIn = isLoggedIn();
+  const loggedIn = useIsLoggedIn();
 
   useEffect(() => {
     dispatch(

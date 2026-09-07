@@ -4,8 +4,7 @@ import ProductShowcase from '../Home/ProductShowcase/ProductShowcase'
 import SubCategoryTabs from '../../common/SubCategoryTabs/SubCategoryTabs'
 import { fetchProducts } from '../../../redux/slices/productSlice'
 import { fetchFavorites } from '../../../redux/slices/favoriteSlice'
-
-const isLoggedIn = () => Boolean(localStorage.getItem('token'));
+import { useIsLoggedIn } from '../../../commonfunction/useAuthState'
 
 const SUB_CATEGORIES = [
   { label: 'All', value: '' },
@@ -17,7 +16,7 @@ export default function GenderCollection({ category, title }) {
   const dispatch = useDispatch();
   const { categories, loading, error } = useSelector((state) => state.products);
   const [activeSubCategory, setActiveSubCategory] = useState('');
-  const loggedIn = isLoggedIn();
+  const loggedIn = useIsLoggedIn();
 
   useEffect(() => {
     dispatch(fetchProducts({ category, subCategory: activeSubCategory || undefined }));

@@ -8,6 +8,7 @@ import cartReducer from '../slices/cartSlice';
 import favoriteReducer from '../slices/favoriteSlice';
 import adminUserReducer from '../slices/adminUserSlice';
 import adminCustomReducer from '../slices/adminCustomSlice';
+import adminCartFavoritesReducer from '../slices/adminCartFavoritesSlice';
 import authModalReducer from '../slices/authModalSlice';
 import featuredReducer from '../slices/featuredSlice';
 
@@ -24,6 +25,7 @@ const store = configureStore(
             favorites: favoriteReducer,
             adminUsers: adminUserReducer,
             adminCustom: adminCustomReducer,
+            adminCartFavorites: adminCartFavoritesReducer,
             authModal: authModalReducer,
             featured: featuredReducer,
         }

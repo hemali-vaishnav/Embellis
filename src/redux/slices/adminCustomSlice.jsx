@@ -1,8 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { baseUrl } from "../../../utils/url";
+import { getAuthItem } from "../../commonfunction/authStorage";
 
 const authHeaders = () => {
-  const token = localStorage.getItem("token");
+  const token = getAuthItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 

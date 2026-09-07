@@ -5,8 +5,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../../../redux/slices/cartSlice";
 import { toggleFavorite } from "../../../../redux/slices/favoriteSlice";
 import { openAuthModal } from "../../../../redux/slices/authModalSlice";
+import { getAuthItem } from "../../../../commonfunction/authStorage";
 
-const isLoggedIn = () => Boolean(localStorage.getItem("token"));
+const isLoggedIn = () => Boolean(getAuthItem("token"));
 
 export default function ProductShowcase({ title, products = [] }) {
   const dispatch = useDispatch();
@@ -45,15 +46,20 @@ export default function ProductShowcase({ title, products = [] }) {
 
   return (
     <section className="bg-[#f5f5f5] py-10 px-6">
-      {title && (
-        <h2 className="text-xl font-semibold uppercase tracking-wider mb-6 px-2">
-          {title}
-        </h2>
-      )}
+      <div className="mx-auto max-w-6xl">
+        {title && (
+          <h2 className="text-xl font-semibold uppercase tracking-wider mb-10 text-center">
+            {title}
+          </h2>
+        )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <Link to={`/product/${product._id}`} key={product._id} className="group block">
+        <div className="flex flex-wrap justify-center gap-6">
+          {products.map((product) => (
+          <Link
+            to={`/product/${product._id}`}
+            key={product._id}
+            className="group block w-[calc(50%-12px)] md:w-[calc(25%-18px)]"
+          >
 
             {/* Image Card */}
             <div className="relative bg-white overflow-hidden">
@@ -115,8 +121,8 @@ export default function ProductShowcase({ title, products = [] }) {
             </div>
 
           </Link>
-        ))}
-
+          ))}
+        </div>
       </div>
     </section>
   );
