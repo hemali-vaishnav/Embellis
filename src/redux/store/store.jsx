@@ -11,6 +11,7 @@ import adminCustomReducer from '../slices/adminCustomSlice';
 import adminCartFavoritesReducer from '../slices/adminCartFavoritesSlice';
 import authModalReducer from '../slices/authModalSlice';
 import featuredReducer from '../slices/featuredSlice';
+import customOrderReducer from '../slices/customOrderSlice';
 
 
 const store = configureStore(
@@ -28,6 +29,7 @@ const store = configureStore(
             adminCartFavorites: adminCartFavoritesReducer,
             authModal: authModalReducer,
             featured: featuredReducer,
+            customOrder: customOrderReducer,
         }
     }
 );

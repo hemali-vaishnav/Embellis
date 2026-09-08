@@ -4,16 +4,68 @@ import { FiRefreshCw, FiSearch } from "react-icons/fi";
 import { AgGridReact } from "ag-grid-react";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { fetchAllCustomOrders } from "../../../redux/slices/adminCustomSlice";
+import { baseUrl } from "../../../../utils/url";
+import { COLOR_HEX_BY_NAME } from "../../../commonfunction/customOrderOptions";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const dateFormatter = (p) => (p.value ? new Date(p.value).toLocaleString() : "-");
+const placementFormatter = (p) => (p.value ? p.value.replace("_", " ") : "-");
+
+const colorCellRenderer = (p) =>
+  p.value ? (
+    <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <span
+        style={{
+          width: 14,
+          height: 14,
+          borderRadius: "50%",
+          background: COLOR_HEX_BY_NAME[p.value] || "#ccc",
+          border: "1px solid rgba(0,0,0,0.15)",
+          flexShrink: 0,
+        }}
+      />
+      {p.value}
+    </span>
+  ) : (
+    <span style={{ color: "#aaa" }}>-</span>
+  );
+
+const designCellRenderer = (p) =>
+  p.value ? (
+    <a href={`${baseUrl}/uploads/${p.value}`} target="_blank" rel="noreferrer">
+      <img
+        src={`${baseUrl}/uploads/${p.value}`}
+        alt=""
+        style={{ width: 36, height: 36, objectFit: "cover", borderRadius: 6, margin: "3px 0" }}
+      />
+    </a>
+  ) : (
+    <span style={{ color: "#aaa" }}>-</span>
+  );
 
 const columnDefs = [
+  {
+    field: "file",
+    headerName: "Design",
+    minWidth: 70,
+    maxWidth: 70,
+    sortable: false,
+    filter: false,
+    cellRenderer: designCellRenderer,
+  },
   { field: "type", headerName: "Garment Type", minWidth: 150, flex: 1 },
   { field: "size", headerName: "Size", minWidth: 90, valueFormatter: (p) => p.value || "-" },
-  { field: "print_placement", headerName: "Print Placement", minWidth: 150 },
-  { field: "quality", headerName: "Quality", minWidth: 100 },
+  { field: "color", headerName: "Color", minWidth: 120, cellRenderer: colorCellRenderer },
+  { field: "print_placement", headerName: "Print Placement", minWidth: 150, valueFormatter: placementFormatter },
+  { field: "quantity", headerName: "Qty", minWidth: 90, type: "numericColumn" },
+  {
+    field: "price",
+    headerName: "Price",
+    minWidth: 110,
+    type: "numericColumn",
+    valueFormatter: (p) => (p.value != null ? `₹${p.value}` : "-"),
+  },
   { field: "note", headerName: "Note", minWidth: 200, flex: 1.4, valueFormatter: (p) => p.value || "-" },
   { field: "user_id", headerName: "User ID", minWidth: 200 },
   { field: "createdAt", headerName: "Submitted", minWidth: 180, valueFormatter: dateFormatter },
